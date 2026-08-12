@@ -22,38 +22,88 @@ The ecosystem's interaction boundary splits system actions across Primary End-Us
 ---
 
 ## 2. NoSQL Structural Schema Blueprint
-Data modeling is engineered leveraging a flexible, typed NoSQL schema configuration via Mongoose ODM to maximize multi-tenant message and query velocity.
+Data modeling is engineered leveraging a flexible, typed NoSQL schema configuration via Mongoose ODM to maximize multi-tenant message and query velocity. This vector diagram renders your complete production data relations cleanly at any zoom level:
 
-```json
-{
-  "User_Schema": {
-    "_id": "ObjectId",
-    "name": "String",
-    "email": "String (Unique)",
-    "password_hash": "String",
-    "role": "String [Student, Teacher, Parent, Admin]",
-    "profile_meta": {
-      "age": "Number",
-      "avatar_url": "String",
-      "locale_preference": "String [en, ur]"
-    },
-    "timestamps": true
-  },
-  "AI_Session_Log": {
-    "_id": "ObjectId",
-    "student_id": "ObjectId (Ref: User)",
-    "lesson_context": "String",
-    "tracking_metrics": {
-      "hand_coordinates_captured": "Boolean",
-      "accuracy_percentage_score": "Number",
-      "processing_latency_ms": "Number"
-    },
-    "timestamp": "Date"
-  }
-}
+```mermaid
+erDiagram
+    USER {
+        ObjectId id
+        String name
+        String email
+        String passwordHash
+        String role
+        Number age
+        String languagePreference
+        String accessibilityOptions
+        String avatarUrl
+        String status
+        Date createdAt
+    }
+    STUDENT-PROGRESS {
+        ObjectId id
+        ObjectId studentId
+        Number completionPercentage
+        Date lastAccessed
+        String status
+        Date completedAt
+        String feedback
+    }
+    PARENT-CHILD-MAPPING {
+        ObjectId id
+        ObjectId parentId
+        ObjectId childId
+        String processType
+        Date createdAt
+    }
+    POINTS {
+        ObjectId id
+        ObjectId userId
+        Number pointsEarned
+        Number totalScore
+        Date createdAt
+    }
+    QUIZ {
+        ObjectId id
+        ObjectId lessonId
+        ObjectId contentId
+        String progressType
+        String status
+        Number completionPercentage
+        Date lastAccessed
+        Date completedAt
+        Date startedAt
+    }
+    AI-CONTENT-LOG {
+        ObjectId id
+        String content
+        String promptId
+        String status
+        String responseType
+        Date createdAt
+    }
+    PROMPT {
+        ObjectId id
+        ObjectId userId
+        String inputType
+        String rawInput
+        String processedInput
+        String language
+        String media
+        Array tags
+        Date updatedAt
+        Date createdAt
+    }
+
+    USER ||--o{ STUDENT-PROGRESS : tracks
+    USER ||--o{ PARENT-CHILD-MAPPING : associates
+    USER ||--o{ POINTS : accumulates
+    USER ||--o{ PROMPT : initiates
+    QUIZ ||--o{ STUDENT-PROGRESS : evaluates
+    PROMPT ||--o{ AI-CONTENT-LOG : generates
 ```
 
 ---
+
 
 ## 3. Real-Time Pipeline Topologies (Socket.IO Event Maps)
 To support instantaneous data delivery across Student, Teacher, and Parent dashboards without refreshing application state, a synchronized bi-directional layer is established via WebSockets.
